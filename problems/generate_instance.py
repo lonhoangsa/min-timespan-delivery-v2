@@ -251,7 +251,7 @@ def main():
     # Để sinh nhiều file: đặt batch_size = số file muốn sinh (ví dụ: 20)
     # Để sinh 1 file đơn: đặt batch_size = None
     batch_size = 1000  # <--- THAY ĐỔI SỐ LƯỢNG FILE Ở ĐÂY (hoặc None nếu chỉ muốn 1 file)
-    start_number = 3003   # <--- SỐ THỨ TỰ BẮT ĐẦU (ví dụ: 1 -> 20.35.1.txt, 100 -> 20.35.100.txt, ...)
+    start_number = 0   # <--- SỐ THỨ TỰ BẮT ĐẦU (ví dụ: 1 -> 20.35.1.txt, 100 -> 20.35.100.txt, ...)
     
     # --- Output Config ---
     output_folder = "data"  # <--- Tên folder chứa các file txt (trong genData/)
@@ -260,8 +260,8 @@ def main():
     
     # --- Problem Config ---
     num_customers = 20   # <--- Số lượng customers
-    num_trucks = 1       # <--- Số lượng trucks
-    num_drones = 0       # <--- Số lượng drones
+    num_trucks = 2       # <--- Số lượng trucks
+    num_drones = 2       # <--- Số lượng drones
     
     # --- Advanced Config ---
     map_size = 10000.0           # Kích thước bản đồ (meters)
