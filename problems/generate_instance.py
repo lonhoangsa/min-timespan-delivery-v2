@@ -250,8 +250,8 @@ def main():
     # --- Batch Generation Mode ---
     # Để sinh nhiều file: đặt batch_size = số file muốn sinh (ví dụ: 20)
     # Để sinh 1 file đơn: đặt batch_size = None
-    batch_size = 1000  # <--- THAY ĐỔI SỐ LƯỢNG FILE Ở ĐÂY (hoặc None nếu chỉ muốn 1 file)
-    start_number = 0   # <--- SỐ THỨ TỰ BẮT ĐẦU (ví dụ: 1 -> 20.35.1.txt, 100 -> 20.35.100.txt, ...)
+    batch_size = 4000  # <--- THAY ĐỔI SỐ LƯỢNG FILE Ở ĐÂY (hoặc None nếu chỉ muốn 1 file)
+    start_number = 1000   # <--- SỐ THỨ TỰ BẮT ĐẦU (ví dụ: 1 -> 20.35.1.txt, 100 -> 20.35.100.txt, ...)
     
     # --- Output Config ---
     output_folder = "data"  # <--- Tên folder chứa các file txt (trong genData/)
