@@ -1,0 +1,12 @@
+2026-03-20 09:53:53,388 [INFO] Log file: E:\TTTH\attentionV2\min-timespan-delivery-v2\logs\pipeline_Lan3_20260320_095353.log
+
+2026-03-20 09:53:53,388 [INFO] CHE DO: Chi sinh instance + push
+
+2026-03-20 09:53:53,388 [INFO] ============================================================
+2026-03-20 09:53:53,388 [INFO] STEP 1: Sinh instance
+2026-03-20 09:53:53,388 [INFO] ============================================================
+2026-03-20 09:53:53,388 [INFO]   Generation #3
+2026-03-20 09:53:53,388 [INFO]   Start number: 8000
+2026-03-20 09:53:53,388 [INFO]   Total instances generated so far: 8000
+
+2026-03-20 09:53:53,388 [DEBUG] $ C:\msys64\ucrt64\bin\python3.12.exe E:\TTTH\attentionV2\min-timespan-delivery-v2\problems\generate_instance.py --start-number 8000 --batch-size 4000

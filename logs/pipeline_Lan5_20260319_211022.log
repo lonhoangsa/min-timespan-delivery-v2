@@ -1,0 +1,16 @@
+2026-03-19 21:10:22,947 [INFO] Log file: E:\TTTH\attentionV2\min-timespan-delivery-v2\logs\pipeline_Lan5_20260319_211022.log
+
+2026-03-19 21:10:22,947 [INFO] CHE DO: Full pipeline
+2026-03-19 21:10:22,947 [INFO]   Workflow      : run
+2026-03-19 21:10:22,947 [INFO]   Data dir     : E:\TTTH\train_data\Lan5
+2026-03-19 21:10:22,947 [INFO]   Baseline dir : E:\TTTH\train_data\Baseline\Lan5
+2026-03-19 21:10:22,947 [INFO] 
+2026-03-19 21:10:22,947 [INFO] Kiem tra prerequisites...
+2026-03-19 21:10:22,947 [DEBUG] $ git --version
+2026-03-19 21:10:22,982 [DEBUG] git version 2.49.0.windows.1
+2026-03-19 21:10:22,982 [DEBUG] $ gh --version
+2026-03-19 21:10:23,283 [DEBUG] gh version 2.88.1 (2026-03-12)
+https://github.com/cli/cli/releases/tag/v2.88.1
+2026-03-19 21:10:23,292 [DEBUG] $ gh auth status
+2026-03-19 21:10:23,337 [DEBUG] STDERR: You are not logged into any GitHub hosts. To log in, run: gh auth login
+2026-03-19 21:10:23,338 [ERROR] gh chua dang nhap! Chay: gh auth login

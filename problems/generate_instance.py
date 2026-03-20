@@ -12,6 +12,8 @@ import random
 import math
 import argparse
 import os
+import time
+from datetime import datetime
 
 
 class InstanceGenerator:
@@ -236,7 +238,7 @@ class InstanceGenerator:
         near_count = sum(1 for d in distances if d <= self.drone_radius_m)
         light_count = sum(1 for d in demands if d < self.light_max_demand)
         
-        print(f"  - Near region (≤{self.drone_radius_m:.2f} m): {near_count}/{self.num_customers} ({near_count/self.num_customers*100:.1f}%)")
+        print(f"  - Near region (<={self.drone_radius_m:.2f} m): {near_count}/{self.num_customers} ({near_count/self.num_customers*100:.1f}%)")
         print(f"  - Light demand (<{self.light_max_demand} kg): {light_count}/{self.num_customers} ({light_count/self.num_customers*100:.1f}%)")
         print(f"  - Demand: min={min(demands):.2f}, max={max(demands):.2f}, avg={sum(demands)/len(demands):.2f} kg")
         print(f"  - Distance: min={min(distances):.2f}, max={max(distances):.2f}, avg={sum(distances)/len(distances):.2f} m")
@@ -247,46 +249,48 @@ def main():
     # CẤU HÌNH - THAY ĐỔI CÁC BIẾN NÀY THEO Ý BẠN
     # ============================================================
     
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Generate instances for PVRPWDP")
+    parser.add_argument("--start-number", type=int, default=0,
+                        help="Starting number for file naming (default: 0)")
+    parser.add_argument("--batch-size", type=int, default=4000,
+                        help="Number of instances to generate (default: 4000)")
+    args = parser.parse_args()
+    
     # --- Batch Generation Mode ---
     # Để sinh nhiều file: đặt batch_size = số file muốn sinh (ví dụ: 20)
     # Để sinh 1 file đơn: đặt batch_size = None
-    batch_size = 4000  # <--- THAY ĐỔI SỐ LƯỢNG FILE Ở ĐÂY (hoặc None nếu chỉ muốn 1 file)
-    start_number = 0   # <--- SỐ THỨ TỰ BẮT ĐẦU (ví dụ: 1 -> 20.35.1.txt, 100 -> 20.35.100.txt, ...)
+    batch_size = args.batch_size  # Có thể pass từ command line
+    start_number = args.start_number  # Có thể pass từ command line
     
     # --- Output Config ---
     output_folder = "data"  # <--- Tên folder chứa các file txt (trong genData/)
-    file_prefix = "20.15"        # <--- Prefix của file (ví dụ: 20.35 -> 20.35.1.txt, 20.35.2.txt, ...)
     single_output = "instance.txt"  # <--- Tên file nếu chỉ sinh 1 file (khi batch_size = None)
     
-    # --- Problem Config ---
-    num_customers = 20   # <--- Số lượng customers
-    num_trucks = 3       # <--- Số lượng trucks
-    num_drones = 2       # <--- Số lượng drones
-    
     # --- Advanced Config ---
-    map_size = 15000.0           # Kích thước bản đồ (meters)
     p_near = 0.8                 # Xác suất customer nằm trong vùng near (0.0 - 1.0)
     p_light_near = 0.80          # Xác suất demand nhẹ trong vùng near (0.0 - 1.0)
     p_light_far = 0.50           # Xác suất demand nhẹ trong vùng far (0.0 - 1.0)
     drone_endurance = 700.0      # Thời gian bay tối đa của drone (giây)
-    random_seed = None           # Random seed (None = random mỗi lần chạy, hoặc số cụ thể để tái tạo)
+    
+    # Tính seed theo format: abcdefghij
+    # ab = 2 chữ số cuối của năm
+    # cd = 2 chữ số tháng (01-12)
+    # ef = 2 chữ số ngày (01-31)
+    # ghij = toàn bộ số giây hiện tại trong ngày (0-86399)
+    now = datetime.now()
+    year_2digit = now.year % 100
+    month = now.month
+    day = now.day
+    seconds_in_day = now.hour * 3600 + now.minute * 60 + now.second
+    
+    seed = int(f"{year_2digit:02d}{month:02d}{day:02d}{seconds_in_day:05d}")
+    random.seed(seed)
+    print(f"Random seed: {seed} (YY={year_2digit:02d}, MM={month:02d}, DD={day:02d}, SS={seconds_in_day:05d})\n")
     
     # ============================================================
     # CODE XỬ LÝ - KHÔNG CẦN THAY ĐỔI PHẦN NÀY
     # ============================================================
-    
-    # Create generator
-    generator = InstanceGenerator(
-        num_customers=num_customers,
-        num_trucks=num_trucks,
-        num_drones=num_drones,
-        map_size=map_size,
-        p_near=p_near,
-        p_light_near=p_light_near,
-        p_light_far=p_light_far,
-        drone_endurance=drone_endurance,
-        seed=random_seed,
-    )
     
     # Check if batch generation
     if batch_size is not None:
@@ -303,24 +307,78 @@ def main():
         print(f"{'='*60}")
         print(f"Generating {n} instances...")
         print(f"Output directory: {output_dir}")
-        print(f"Filename pattern: {file_prefix}.{start_number}.txt to {file_prefix}.{start_number + n - 1}.txt")
+        print(f"Filename pattern: instance{start_number}.txt to instance{start_number + n - 1}.txt")
         print(f"{'='*60}\n")
         
         # Generate n instances
         for i in range(start_number, start_number + n):
-            filename = f"{file_prefix}.{i}.txt"
+            # Random parameters for each instance
+            num_customers = random.randint(20, 100)  # Random từ 20 tới 100 nodes
+            map_size = random.uniform(10000.0, 40000.0)  # Random từ 10km tới 40km
+            
+            # Determine trucks and drones based on num_customers
+            if num_customers <= 40:
+                num_trucks = random.randint(2, 3)
+                num_drones = random.randint(2, 3)
+            elif num_customers < 81:  # 40 < num_customers < 81
+                num_trucks = random.randint(3, 5)
+                num_drones = random.randint(3, 5)
+            else:  # num_customers >= 81
+                num_trucks = random.randint(4, 6)
+                num_drones = random.randint(4, 6)
+            
+            # Create generator with randomized parameters
+            generator = InstanceGenerator(
+                num_customers=num_customers,
+                num_trucks=num_trucks,
+                num_drones=num_drones,
+                map_size=map_size,
+                p_near=p_near,
+                p_light_near=p_light_near,
+                p_light_far=p_light_far,
+                drone_endurance=drone_endurance,
+                seed=None,  # Don't set seed in generator, already set globally
+            )
+            
+            filename = f"instance{i}.txt"
             filepath = os.path.join(output_dir, filename)
             
             print(f"[{i - start_number + 1}/{n}] Generating {filename}...")
+            print(f"  Parameters: {num_customers} customers, {num_trucks} trucks, {num_drones} drones, {map_size:.0f}m map")
             instance = generator.generate()
             generator.save_to_file(instance, filepath)
             print()
         
         print(f"{'='*60}")
-        print(f"✓ Successfully generated {n} instances in: {output_dir}")
+        print(f"[OK] Successfully generated {n} instances in: {output_dir}")
         print(f"{'='*60}")
     else:
         # Single generation mode
+        num_customers = random.randint(20, 100)
+        map_size = random.uniform(10000.0, 40000.0)
+        
+        if num_customers <= 40:
+            num_trucks = random.randint(2, 3)
+            num_drones = random.randint(2, 3)
+        elif num_customers < 81:
+            num_trucks = random.randint(3, 5)
+            num_drones = random.randint(3, 5)
+        else:
+            num_trucks = random.randint(4, 6)
+            num_drones = random.randint(4, 6)
+        
+        generator = InstanceGenerator(
+            num_customers=num_customers,
+            num_trucks=num_trucks,
+            num_drones=num_drones,
+            map_size=map_size,
+            p_near=p_near,
+            p_light_near=p_light_near,
+            p_light_far=p_light_far,
+            drone_endurance=drone_endurance,
+            seed=None,  # Don't set seed in generator, already set globally
+        )
+        
         instance = generator.generate()
         generator.save_to_file(instance, single_output)
 

@@ -7,12 +7,10 @@ Requirements:
   - Python 3.8+
 
 Examples:
-  python scripts/pipeline.py -y                    # Sinh 4000 instance + push + workflow (tu-increment)
-  python scripts/pipeline.py --status              # Xem lich su generation
-  python scripts/pipeline.py --reset               # Reset generation state ve 0
-  python scripts/pipeline.py --only-generate -y    # Chi sinh 4000 + push (khong workflow)
-  python scripts/pipeline.py --only-download --run-id 12345678  # Chi tai summary
-  python scripts/pipeline.py --workflow run -y     # Dung 'run' workflow (mac dinh: run-batch)
+  python scripts/pipeline.py --name Lan5 --workflow run
+  python scripts/pipeline.py --name Lan6 --workflow run-batch --batches 1 2 3
+  python scripts/pipeline.py --name Lan7 --only-generate
+  python scripts/pipeline.py --name Lan7 --only-download --run-id 12345678
 """
 
 from __future__ import annotations
@@ -32,7 +30,6 @@ from typing import TYPE_CHECKING
 ROOT = Path(__file__).resolve().parent.parent
 TRAIN_DATA_ROOT = Path(r"E:\TTTH\train_data")
 BASELINE_ROOT = TRAIN_DATA_ROOT / "Baseline"
-GENERATION_STATE_FILE = ROOT / "GENERATION_STATE.json"
 
 logger = logging.getLogger("pipeline")
 
@@ -50,8 +47,6 @@ class Namespace(argparse.Namespace):
         skip_generate: bool
         skip_push: bool
         yes: bool
-        status: bool
-        reset: bool
 
 
 def setup_logging(name: str) -> Path:
@@ -200,28 +195,12 @@ def step1_generate_instances():
     logger.info("STEP 1: Sinh instance")
     logger.info("=" * 60)
 
-    # Load current state
-    state = load_generation_state()
-    start_number = state["next_start_number"]
-    generation_num = state["generation_count"] + 1
-    
-    logger.info(f"  Generation #{generation_num}")
-    logger.info(f"  Start number: {start_number}")
-    logger.info(f"  Total instances generated so far: {state['total_instances_generated']}\n")
-
     script = ROOT / "problems" / "generate_instance.py"
-    run_cmd([
-        sys.executable, str(script),
-        "--start-number", str(start_number),
-        "--batch-size", "4000"
-    ], capture=False)
+    run_cmd([sys.executable, str(script)], capture=False)
 
     data_dir = ROOT / "problems" / "data"
     count = len(list(data_dir.glob("*.txt")))
     logger.info(f"  -> Da sinh {count} file trong {data_dir}\n")
-    
-    # Update generation state
-    update_generation_state(count, start_number)
 
 
 # ---------------------------------------------------------------------------
@@ -244,95 +223,6 @@ def step2_git_push():
     run_cmd(["git", "commit", "-m", f"data: generate instances ({timestamp})"])
     run_cmd(["git", "push"])
     logger.info("  -> Push thanh cong!\n")
-
-
-# ---------------------------------------------------------------------------
-# Helper – Calculate batch count
-# ---------------------------------------------------------------------------
-
-def calculate_batch_count(files_per_batch: int) -> int:
-    """Tinh so batch can thiet dua tren so file trong problems/data"""
-    data_dir = ROOT / "problems" / "data"
-    total_files = len(list(data_dir.glob("*.txt")))
-    if total_files == 0:
-        logger.warning("  Khong co file .txt nao trong problems/data!")
-        return 0
-    batch_count = (total_files + files_per_batch - 1) // files_per_batch
-    logger.info(f"  Tinh toan: {total_files} files / {files_per_batch} files-per-batch = {batch_count} batches\n")
-    return batch_count
-
-
-# ---------------------------------------------------------------------------
-# Helper – Generation State Management
-# ---------------------------------------------------------------------------
-
-def load_generation_state() -> dict:
-    """Load generation state from JSON file"""
-    if GENERATION_STATE_FILE.exists():
-        try:
-            with open(GENERATION_STATE_FILE, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.warning(f"Cannot load state file: {e}, using defaults")
-    
-    # Default state
-    return {
-        "generation_count": 0,
-        "next_start_number": 0,
-        "total_instances_generated": 0,
-        "last_generation_date": None,
-        "history": []
-    }
-
-
-def save_generation_state(state: dict):
-    """Save generation state to JSON file"""
-    try:
-        with open(GENERATION_STATE_FILE, 'w') as f:
-            json.dump(state, f, indent=2)
-        logger.info(f"  -> Generation state saved to {GENERATION_STATE_FILE}")
-    except Exception as e:
-        logger.error(f"Cannot save state file: {e}")
-
-
-def update_generation_state(num_instances: int, start_number: int):
-    """Update generation state after successful generation"""
-    state = load_generation_state()
-    
-    state["generation_count"] += 1
-    state["total_instances_generated"] += num_instances
-    state["next_start_number"] = start_number + num_instances
-    state["last_generation_date"] = datetime.now().isoformat()
-    
-    # Add to history
-    history_entry = {
-        "generation_num": state["generation_count"],
-        "start_number": start_number,
-        "num_instances": num_instances,
-        "date": state["last_generation_date"],
-        "total_so_far": state["total_instances_generated"]
-    }
-    state["history"].append(history_entry)
-    
-    save_generation_state(state)
-    
-    # Log summary
-    logger.info(f"  Generation #{state['generation_count']}: {num_instances} instances (start={start_number})")
-    logger.info(f"  Total instances generated so far: {state['total_instances_generated']}")
-    logger.info(f"  Next start number: {state['next_start_number']}\n")
-
-
-def reset_generation_state():
-    """Reset generation state to initial state"""
-    default_state = {
-        "generation_count": 0,
-        "next_start_number": 0,
-        "total_instances_generated": 0,
-        "last_generation_date": None,
-        "history": []
-    }
-    save_generation_state(default_state)
-    print(f"\n[INFO] Generation state reset to initial state\n")
 
 
 # ---------------------------------------------------------------------------
@@ -386,14 +276,9 @@ def step3_trigger_workflow(
         logger.info(f"  -> Run ID: {run_id}")
 
     elif workflow == "run-batch":
-        # Auto-calculate batches if not provided
         if not batches:
-            batch_count = calculate_batch_count(files_per_batch)
-            if batch_count == 0:
-                logger.error("Khong the tinh batch count!")
-                sys.exit(1)
-            batches = list(range(1, batch_count + 1))
-            logger.info(f"  Auto-generated batches: {batches}\n")
+            logger.error("Can chi dinh --batches cho workflow run-batch!")
+            sys.exit(1)
 
         for batch_num in batches:
             prev_id = _get_latest_run_id(workflow_file)
@@ -555,36 +440,17 @@ def confirm(message: str) -> bool:
         return False
 
 
-def show_generation_status():
-    """Display current generation status"""
-    state = load_generation_state()
-    print("\n" + "=" * 60)
-    print("GENERATION STATUS")
-    print("=" * 60)
-    print(f"Total generations: {state['generation_count']}")
-    print(f"Total instances generated: {state['total_instances_generated']}")
-    print(f"Next start number: {state['next_start_number']}")
-    print(f"Last generation date: {state['last_generation_date']}")
-    
-    if state['history']:
-        print("\nHistory:")
-        for entry in state['history'][-5:]:  # Show last 5 entries
-            print(f"  Gen #{entry['generation_num']}: {entry['num_instances']} instances "
-                  f"(start={entry['start_number']}, total={entry['total_so_far']}) - {entry['date'][:10]}")
-    print("=" * 60 + "\n")
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Pipeline tu dong: sinh instance -> push -> workflow -> chuyen data -> tai summary",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    parser.add_argument("--name", required=False, help="Ten folder (VD: Lan5). Neu khong co, tu-sinh Lan[generation_num]")
-    parser.add_argument("--workflow", choices=["run", "run-batch"], default="run-batch",
-                        help="Workflow can trigger (default: run-batch)")
+    parser.add_argument("--name", required=True, help="Ten folder (VD: Lan5)")
+    parser.add_argument("--workflow", choices=["run", "run-batch"], default="run",
+                        help="Workflow can trigger (default: run)")
     parser.add_argument("--batches", type=int, nargs="+",
-                        help="Batch numbers cho run-batch (VD: 1 2 3). Neu khong co, se tu-tinh tu file count")
+                        help="Batch numbers cho run-batch (VD: 1 2 3)")
     parser.add_argument("--files-per-batch", type=int, default=1000,
                         help="So file moi batch (default: 1000)")
     parser.add_argument("--timeout", type=int, default=7200,
@@ -601,33 +467,8 @@ def main():
                         help="Bo qua buoc git push")
     parser.add_argument("-y", "--yes", action="store_true",
                         help="Bo qua xac nhan")
-    parser.add_argument("--status", action="store_true",
-                        help="Chi hien thi generation status")
-    parser.add_argument("--reset", action="store_true",
-                        help="Reset generation state ve initial (0 generation, 0 instances)")
 
     args = parser.parse_args(namespace=Namespace())
-
-    # If --status, show status and exit (no logging setup needed)
-    if args.status:
-        show_generation_status()
-        return
-    
-    # If --reset, reset state and exit (no logging setup needed)
-    if args.reset:
-        reset_generation_state()
-        return
-    
-    # For --only-download, --name is required
-    if args.only_download and not args.name:
-        parser.error("--name is required when using --only-download")
-    
-    # For other modes without --name, auto-generate from generation count
-    if not args.name:
-        state = load_generation_state()
-        gen_num = state["generation_count"] + 1
-        args.name = f"Lan{gen_num}"
-        print(f"[INFO] Auto-generated name: {args.name} (generation #{gen_num})\n")
 
     log_file = setup_logging(args.name)
     logger.info(f"Log file: {log_file}\n")
@@ -659,17 +500,9 @@ def main():
         logger.info(f"  Workflow      : {args.workflow}")
         logger.info(f"  Data dir     : {data_dir}")
         logger.info(f"  Baseline dir : {baseline_dir}")
-        
-        # Auto-calculate batches if run-batch and not provided
-        if args.workflow == "run-batch" and not args.batches:
-            batch_count = calculate_batch_count(args.files_per_batch)
-            if batch_count > 0:
-                args.batches = list(range(1, batch_count + 1))
-                logger.info(f"  Batches      : {args.batches} (auto-calculated)")
-        elif args.batches:
+        if args.batches:
             logger.info(f"  Batches      : {args.batches}")
-        
-        logger.info(f"  Files/batch  : {args.files_per_batch}\n")
+        logger.info("")
 
         if not args.yes:
             if not confirm("Bat dau pipeline?"):
