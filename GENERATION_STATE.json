@@ -1,7 +1,645 @@
 {
-  "generation_count": 0,
-  "next_start_number": 0,
-  "total_instances_generated": 0,
-  "last_generation_date": null,
-  "history": []
+  "generation_count": 91,
+  "next_start_number": 388000,
+  "total_instances_generated": 388000,
+  "last_generation_date": "2026-04-03T07:43:38.327528",
+  "history": [
+    {
+      "generation_num": 1,
+      "start_number": 0,
+      "num_instances": 4000,
+      "date": "2026-03-20T10:01:36.283181",
+      "total_so_far": 4000
+    },
+    {
+      "generation_num": 2,
+      "start_number": 4000,
+      "num_instances": 4000,
+      "date": "2026-03-20T10:56:02.325009",
+      "total_so_far": 8000
+    },
+    {
+      "generation_num": 3,
+      "start_number": 8000,
+      "num_instances": 4000,
+      "date": "2026-03-20T11:36:30.157662",
+      "total_so_far": 12000
+    },
+    {
+      "generation_num": 4,
+      "start_number": 12000,
+      "num_instances": 4000,
+      "date": "2026-03-20T13:39:57.514732",
+      "total_so_far": 16000
+    },
+    {
+      "generation_num": 5,
+      "start_number": 16000,
+      "num_instances": 4000,
+      "date": "2026-03-20T14:15:35.916335",
+      "total_so_far": 20000
+    },
+    {
+      "generation_num": 6,
+      "start_number": 20000,
+      "num_instances": 4000,
+      "date": "2026-03-20T15:04:35.362051",
+      "total_so_far": 24000
+    },
+    {
+      "generation_num": 7,
+      "start_number": 24000,
+      "num_instances": 4000,
+      "date": "2026-03-20T15:41:16.323839",
+      "total_so_far": 28000
+    },
+    {
+      "generation_num": 8,
+      "start_number": 28000,
+      "num_instances": 4000,
+      "date": "2026-03-20T16:21:08.710774",
+      "total_so_far": 32000
+    },
+    {
+      "generation_num": 9,
+      "start_number": 32000,
+      "num_instances": 4000,
+      "date": "2026-03-20T18:09:13.713271",
+      "total_so_far": 36000
+    },
+    {
+      "generation_num": 10,
+      "start_number": 36000,
+      "num_instances": 4000,
+      "date": "2026-03-20T18:42:32.478081",
+      "total_so_far": 40000
+    },
+    {
+      "generation_num": 11,
+      "start_number": 40000,
+      "num_instances": 4000,
+      "date": "2026-03-20T19:27:38.730609",
+      "total_so_far": 44000
+    },
+    {
+      "generation_num": 12,
+      "start_number": 44000,
+      "num_instances": 4000,
+      "date": "2026-03-20T20:14:24.922359",
+      "total_so_far": 48000
+    },
+    {
+      "generation_num": 13,
+      "start_number": 48000,
+      "num_instances": 4000,
+      "date": "2026-03-20T20:53:06.756423",
+      "total_so_far": 52000
+    },
+    {
+      "generation_num": 14,
+      "start_number": 52000,
+      "num_instances": 4000,
+      "date": "2026-03-20T21:34:18.255788",
+      "total_so_far": 56000
+    },
+    {
+      "generation_num": 15,
+      "start_number": 56000,
+      "num_instances": 4000,
+      "date": "2026-03-20T22:15:53.616018",
+      "total_so_far": 60000
+    },
+    {
+      "generation_num": 16,
+      "start_number": 60000,
+      "num_instances": 4000,
+      "date": "2026-03-20T22:58:37.562510",
+      "total_so_far": 64000
+    },
+    {
+      "generation_num": 17,
+      "start_number": 64000,
+      "num_instances": 4000,
+      "date": "2026-03-21T15:39:14.450548",
+      "total_so_far": 68000
+    },
+    {
+      "generation_num": 18,
+      "start_number": 68000,
+      "num_instances": 4000,
+      "date": "2026-03-21T16:40:58.317718",
+      "total_so_far": 72000
+    },
+    {
+      "generation_num": 19,
+      "start_number": 72000,
+      "num_instances": 4000,
+      "date": "2026-03-21T17:57:13.993189",
+      "total_so_far": 76000
+    },
+    {
+      "generation_num": 20,
+      "start_number": 76000,
+      "num_instances": 4000,
+      "date": "2026-03-21T18:55:14.541183",
+      "total_so_far": 80000
+    },
+    {
+      "generation_num": 21,
+      "start_number": 80000,
+      "num_instances": 4000,
+      "date": "2026-03-21T20:15:57.697732",
+      "total_so_far": 84000
+    },
+    {
+      "generation_num": 22,
+      "start_number": 84000,
+      "num_instances": 4000,
+      "date": "2026-03-21T21:50:50.066130",
+      "total_so_far": 88000
+    },
+    {
+      "generation_num": 23,
+      "start_number": 88000,
+      "num_instances": 4000,
+      "date": "2026-03-21T23:03:54.240237",
+      "total_so_far": 92000
+    },
+    {
+      "generation_num": 24,
+      "start_number": 92000,
+      "num_instances": 4000,
+      "date": "2026-03-22T08:43:45.558880",
+      "total_so_far": 96000
+    },
+    {
+      "generation_num": 25,
+      "start_number": 96000,
+      "num_instances": 4000,
+      "date": "2026-03-22T09:32:52.319850",
+      "total_so_far": 100000
+    },
+    {
+      "generation_num": 26,
+      "start_number": 100000,
+      "num_instances": 4000,
+      "date": "2026-03-22T10:32:08.478912",
+      "total_so_far": 104000
+    },
+    {
+      "generation_num": 27,
+      "start_number": 104000,
+      "num_instances": 4000,
+      "date": "2026-03-22T12:20:44.122189",
+      "total_so_far": 108000
+    },
+    {
+      "generation_num": 28,
+      "start_number": 108000,
+      "num_instances": 4000,
+      "date": "2026-03-22T15:18:46.897790",
+      "total_so_far": 112000
+    },
+    {
+      "generation_num": 29,
+      "start_number": 112000,
+      "num_instances": 4000,
+      "date": "2026-03-22T15:54:51.250389",
+      "total_so_far": 116000
+    },
+    {
+      "generation_num": 30,
+      "start_number": 116000,
+      "num_instances": 4000,
+      "date": "2026-03-22T16:42:55.498983",
+      "total_so_far": 120000
+    },
+    {
+      "generation_num": 31,
+      "start_number": 120000,
+      "num_instances": 4000,
+      "date": "2026-03-22T17:23:49.924501",
+      "total_so_far": 124000
+    },
+    {
+      "generation_num": 32,
+      "start_number": 124000,
+      "num_instances": 4000,
+      "date": "2026-03-22T18:17:35.190206",
+      "total_so_far": 128000
+    },
+    {
+      "generation_num": 33,
+      "start_number": 128000,
+      "num_instances": 4000,
+      "date": "2026-03-22T18:56:43.100623",
+      "total_so_far": 132000
+    },
+    {
+      "generation_num": 34,
+      "start_number": 132000,
+      "num_instances": 4000,
+      "date": "2026-03-22T20:19:04.841608",
+      "total_so_far": 136000
+    },
+    {
+      "generation_num": 35,
+      "start_number": 136000,
+      "num_instances": 4000,
+      "date": "2026-03-22T21:05:15.866650",
+      "total_so_far": 140000
+    },
+    {
+      "generation_num": 36,
+      "start_number": 140000,
+      "num_instances": 4000,
+      "date": "2026-03-22T22:25:39.301922",
+      "total_so_far": 144000
+    },
+    {
+      "generation_num": 37,
+      "start_number": 144000,
+      "num_instances": 4000,
+      "date": "2026-03-22T23:53:07.926966",
+      "total_so_far": 148000
+    },
+    {
+      "generation_num": 38,
+      "start_number": 148000,
+      "num_instances": 4000,
+      "date": "2026-03-23T01:22:54.629527",
+      "total_so_far": 152000
+    },
+    {
+      "generation_num": 39,
+      "start_number": 152000,
+      "num_instances": 4000,
+      "date": "2026-03-23T02:52:42.967403",
+      "total_so_far": 156000
+    },
+    {
+      "generation_num": 40,
+      "start_number": 156000,
+      "num_instances": 4000,
+      "date": "2026-03-23T04:21:02.973264",
+      "total_so_far": 160000
+    },
+    {
+      "generation_num": 41,
+      "start_number": 160000,
+      "num_instances": 4000,
+      "date": "2026-03-23T05:49:24.412034",
+      "total_so_far": 164000
+    },
+    {
+      "generation_num": 42,
+      "start_number": 164000,
+      "num_instances": 4000,
+      "date": "2026-03-23T07:18:32.916392",
+      "total_so_far": 168000
+    },
+    {
+      "generation_num": 43,
+      "start_number": 168000,
+      "num_instances": 8000,
+      "date": "2026-03-23T13:25:15.851313",
+      "total_so_far": 176000
+    },
+    {
+      "generation_num": 44,
+      "start_number": 176000,
+      "num_instances": 12000,
+      "date": "2026-03-23T23:27:59.566738",
+      "total_so_far": 188000
+    },
+    {
+      "generation_num": 45,
+      "start_number": 188000,
+      "num_instances": 16000,
+      "date": "2026-03-24T09:14:23.198582",
+      "total_so_far": 204000
+    },
+    {
+      "generation_num": 46,
+      "start_number": 204000,
+      "num_instances": 4000,
+      "date": "2026-03-26T09:33:56.898460",
+      "total_so_far": 208000
+    },
+    {
+      "generation_num": 47,
+      "start_number": 208000,
+      "num_instances": 4000,
+      "date": "2026-03-27T19:30:42.348495",
+      "total_so_far": 212000
+    },
+    {
+      "generation_num": 48,
+      "start_number": 212000,
+      "num_instances": 4000,
+      "date": "2026-03-29T23:04:47.891485",
+      "total_so_far": 216000
+    },
+    {
+      "generation_num": 49,
+      "start_number": 216000,
+      "num_instances": 4000,
+      "date": "2026-03-29T23:39:44.209594",
+      "total_so_far": 220000
+    },
+    {
+      "generation_num": 50,
+      "start_number": 220000,
+      "num_instances": 4000,
+      "date": "2026-03-30T01:10:51.333263",
+      "total_so_far": 224000
+    },
+    {
+      "generation_num": 51,
+      "start_number": 224000,
+      "num_instances": 4000,
+      "date": "2026-03-30T09:29:51.378358",
+      "total_so_far": 228000
+    },
+    {
+      "generation_num": 52,
+      "start_number": 228000,
+      "num_instances": 4000,
+      "date": "2026-04-01T00:29:44.852688",
+      "total_so_far": 232000
+    },
+    {
+      "generation_num": 53,
+      "start_number": 232000,
+      "num_instances": 4000,
+      "date": "2026-04-01T01:03:58.229088",
+      "total_so_far": 236000
+    },
+    {
+      "generation_num": 54,
+      "start_number": 236000,
+      "num_instances": 4000,
+      "date": "2026-04-01T01:37:15.778893",
+      "total_so_far": 240000
+    },
+    {
+      "generation_num": 55,
+      "start_number": 240000,
+      "num_instances": 4000,
+      "date": "2026-04-01T02:09:51.454505",
+      "total_so_far": 244000
+    },
+    {
+      "generation_num": 56,
+      "start_number": 244000,
+      "num_instances": 4000,
+      "date": "2026-04-01T02:45:40.821131",
+      "total_so_far": 248000
+    },
+    {
+      "generation_num": 57,
+      "start_number": 248000,
+      "num_instances": 4000,
+      "date": "2026-04-01T03:20:01.463789",
+      "total_so_far": 252000
+    },
+    {
+      "generation_num": 58,
+      "start_number": 252000,
+      "num_instances": 4000,
+      "date": "2026-04-01T03:52:54.422750",
+      "total_so_far": 256000
+    },
+    {
+      "generation_num": 59,
+      "start_number": 256000,
+      "num_instances": 4000,
+      "date": "2026-04-01T04:25:37.994057",
+      "total_so_far": 260000
+    },
+    {
+      "generation_num": 60,
+      "start_number": 260000,
+      "num_instances": 4000,
+      "date": "2026-04-01T04:58:25.137857",
+      "total_so_far": 264000
+    },
+    {
+      "generation_num": 61,
+      "start_number": 264000,
+      "num_instances": 4000,
+      "date": "2026-04-01T05:31:37.564482",
+      "total_so_far": 268000
+    },
+    {
+      "generation_num": 62,
+      "start_number": 268000,
+      "num_instances": 4000,
+      "date": "2026-04-01T06:05:34.306786",
+      "total_so_far": 272000
+    },
+    {
+      "generation_num": 63,
+      "start_number": 272000,
+      "num_instances": 4000,
+      "date": "2026-04-01T06:38:52.029729",
+      "total_so_far": 276000
+    },
+    {
+      "generation_num": 64,
+      "start_number": 276000,
+      "num_instances": 4000,
+      "date": "2026-04-02T00:32:09.741600",
+      "total_so_far": 280000
+    },
+    {
+      "generation_num": 65,
+      "start_number": 280000,
+      "num_instances": 4000,
+      "date": "2026-04-02T01:04:34.939327",
+      "total_so_far": 284000
+    },
+    {
+      "generation_num": 66,
+      "start_number": 284000,
+      "num_instances": 4000,
+      "date": "2026-04-02T01:38:43.814003",
+      "total_so_far": 288000
+    },
+    {
+      "generation_num": 67,
+      "start_number": 288000,
+      "num_instances": 4000,
+      "date": "2026-04-02T02:12:08.860851",
+      "total_so_far": 292000
+    },
+    {
+      "generation_num": 68,
+      "start_number": 292000,
+      "num_instances": 4000,
+      "date": "2026-04-02T02:46:09.775002",
+      "total_so_far": 296000
+    },
+    {
+      "generation_num": 69,
+      "start_number": 296000,
+      "num_instances": 4000,
+      "date": "2026-04-02T03:18:48.673488",
+      "total_so_far": 300000
+    },
+    {
+      "generation_num": 70,
+      "start_number": 300000,
+      "num_instances": 4000,
+      "date": "2026-04-02T03:52:30.637984",
+      "total_so_far": 304000
+    },
+    {
+      "generation_num": 71,
+      "start_number": 304000,
+      "num_instances": 4000,
+      "date": "2026-04-02T04:27:20.135426",
+      "total_so_far": 308000
+    },
+    {
+      "generation_num": 72,
+      "start_number": 308000,
+      "num_instances": 4000,
+      "date": "2026-04-02T05:01:04.440225",
+      "total_so_far": 312000
+    },
+    {
+      "generation_num": 73,
+      "start_number": 312000,
+      "num_instances": 4000,
+      "date": "2026-04-02T05:34:08.306971",
+      "total_so_far": 316000
+    },
+    {
+      "generation_num": 74,
+      "start_number": 316000,
+      "num_instances": 4000,
+      "date": "2026-04-02T06:09:10.210658",
+      "total_so_far": 320000
+    },
+    {
+      "generation_num": 75,
+      "start_number": 320000,
+      "num_instances": 4000,
+      "date": "2026-04-02T06:42:13.271979",
+      "total_so_far": 324000
+    },
+    {
+      "generation_num": 76,
+      "start_number": 324000,
+      "num_instances": 4000,
+      "date": "2026-04-02T07:14:46.294611",
+      "total_so_far": 328000
+    },
+    {
+      "generation_num": 77,
+      "start_number": 328000,
+      "num_instances": 4000,
+      "date": "2026-04-02T23:59:46.959602",
+      "total_so_far": 332000
+    },
+    {
+      "generation_num": 78,
+      "start_number": 332000,
+      "num_instances": 4000,
+      "date": "2026-04-03T00:33:03.073720",
+      "total_so_far": 336000
+    },
+    {
+      "generation_num": 79,
+      "start_number": 336000,
+      "num_instances": 4000,
+      "date": "2026-04-03T01:05:30.007969",
+      "total_so_far": 340000
+    },
+    {
+      "generation_num": 80,
+      "start_number": 340000,
+      "num_instances": 4000,
+      "date": "2026-04-03T01:38:37.113544",
+      "total_so_far": 344000
+    },
+    {
+      "generation_num": 81,
+      "start_number": 344000,
+      "num_instances": 4000,
+      "date": "2026-04-03T02:10:04.557240",
+      "total_so_far": 348000
+    },
+    {
+      "generation_num": 82,
+      "start_number": 348000,
+      "num_instances": 4000,
+      "date": "2026-04-03T02:43:55.561211",
+      "total_so_far": 352000
+    },
+    {
+      "generation_num": 83,
+      "start_number": 352000,
+      "num_instances": 4000,
+      "date": "2026-04-03T03:16:38.903888",
+      "total_so_far": 356000
+    },
+    {
+      "generation_num": 84,
+      "start_number": 356000,
+      "num_instances": 4000,
+      "date": "2026-04-03T03:48:53.777438",
+      "total_so_far": 360000
+    },
+    {
+      "generation_num": 85,
+      "start_number": 360000,
+      "num_instances": 4000,
+      "date": "2026-04-03T04:24:08.570454",
+      "total_so_far": 364000
+    },
+    {
+      "generation_num": 86,
+      "start_number": 364000,
+      "num_instances": 4000,
+      "date": "2026-04-03T04:56:40.021371",
+      "total_so_far": 368000
+    },
+    {
+      "generation_num": 87,
+      "start_number": 368000,
+      "num_instances": 4000,
+      "date": "2026-04-03T05:30:58.472276",
+      "total_so_far": 372000
+    },
+    {
+      "generation_num": 88,
+      "start_number": 372000,
+      "num_instances": 4000,
+      "date": "2026-04-03T06:04:06.537246",
+      "total_so_far": 376000
+    },
+    {
+      "generation_num": 89,
+      "start_number": 376000,
+      "num_instances": 4000,
+      "date": "2026-04-03T06:38:16.484779",
+      "total_so_far": 380000
+    },
+    {
+      "generation_num": 90,
+      "start_number": 380000,
+      "num_instances": 4000,
+      "date": "2026-04-03T07:11:04.281428",
+      "total_so_far": 384000
+    },
+    {
+      "generation_num": 91,
+      "start_number": 384000,
+      "num_instances": 4000,
+      "date": "2026-04-03T07:43:38.327528",
+      "total_so_far": 388000
+    }
+  ]
 }

@@ -1,0 +1,25 @@
+2026-04-03 07:49:34,685 [INFO] Log file: E:\TTTH\attentionV2\min-timespan-delivery-v2\logs\pipeline_Lan92_20260403_074934.log
+
+2026-04-03 07:49:34,686 [INFO] CHE DO: Full pipeline
+2026-04-03 07:49:34,688 [INFO]   Workflow      : run-batch
+2026-04-03 07:49:34,689 [INFO]   Data dir     : E:\TTTH\train_data\Lan92
+2026-04-03 07:49:34,690 [INFO]   Baseline dir : E:\TTTH\train_data\Baseline\Lan92
+2026-04-03 07:49:34,700 [INFO]   Tinh toan: 4000 files / 1000 files-per-batch = 4 batches
+
+2026-04-03 07:49:34,701 [INFO]   Batches      : [1, 2, 3, 4] (auto-calculated)
+2026-04-03 07:49:34,703 [INFO]   Files/batch  : 1000
+
+2026-04-03 07:49:34,704 [INFO] Kiem tra prerequisites...
+2026-04-03 07:49:34,705 [DEBUG] $ git --version
+2026-04-03 07:49:34,732 [DEBUG] git version 2.49.0.windows.1
+2026-04-03 07:49:34,733 [DEBUG] $ gh --version
+2026-04-03 07:49:34,807 [DEBUG] gh version 2.88.1 (2026-03-12)
+https://github.com/cli/cli/releases/tag/v2.88.1
+2026-04-03 07:49:34,807 [DEBUG] $ gh auth status
+2026-04-03 07:49:34,913 [DEBUG] STDERR: github.com
+  X Failed to log in to github.com account PakerB (keyring)
+  - Active account: true
+  - The token in keyring is invalid.
+  - To re-authenticate, run: gh auth login -h github.com
+  - To forget about this account, run: gh auth logout -h github.com -u PakerB
+2026-04-03 07:49:34,913 [ERROR] gh chua dang nhap! Chay: gh auth login

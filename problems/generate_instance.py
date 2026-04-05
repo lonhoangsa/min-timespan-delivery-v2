@@ -314,6 +314,7 @@ def main():
         for i in range(start_number, start_number + n):
             # Random parameters for each instance
             num_customers = random.randint(20, 100)  # Random từ 20 tới 100 nodes
+            # num_customers = 100
             map_size = random.uniform(10000.0, 40000.0)  # Random từ 10km tới 40km
             
             # Determine trucks and drones based on num_customers

@@ -1,0 +1,32 @@
+2026-04-02 07:48:13,205 [INFO] Log file: E:\TTTH\attentionV2\min-timespan-delivery-v2\logs\pipeline_Lan77_20260402_074813.log
+
+2026-04-02 07:48:13,206 [INFO] CHE DO: Full pipeline
+2026-04-02 07:48:13,207 [INFO]   Workflow      : run-batch
+2026-04-02 07:48:13,209 [INFO]   Data dir     : E:\TTTH\train_data\Lan77
+2026-04-02 07:48:13,210 [INFO]   Baseline dir : E:\TTTH\train_data\Baseline\Lan77
+2026-04-02 07:48:13,210 [INFO]   Batches      : [1, 2, 3]
+2026-04-02 07:48:13,210 [INFO]   Files/batch  : 1000
+
+2026-04-02 07:48:13,210 [INFO] Kiem tra prerequisites...
+2026-04-02 07:48:13,210 [DEBUG] $ git --version
+2026-04-02 07:48:13,234 [DEBUG] git version 2.49.0.windows.1
+2026-04-02 07:48:13,242 [DEBUG] $ gh --version
+2026-04-02 07:48:13,308 [DEBUG] gh version 2.88.1 (2026-03-12)
+https://github.com/cli/cli/releases/tag/v2.88.1
+2026-04-02 07:48:13,308 [DEBUG] $ gh auth status
+2026-04-02 07:48:13,834 [DEBUG] github.com
+  âœ“ Logged in to github.com account PakerB (keyring)
+  - Active account: true
+  - Git operations protocol: https
+  - Token: gho_************************************
+  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'
+2026-04-02 07:48:13,834 [INFO]   -> git va gh da san sang
+
+2026-04-02 07:48:13,836 [INFO] ============================================================
+2026-04-02 07:48:13,837 [INFO] STEP 1: Sinh instance
+2026-04-02 07:48:13,838 [INFO] ============================================================
+2026-04-02 07:48:13,839 [INFO]   Generation #77
+2026-04-02 07:48:13,841 [INFO]   Start number: 328000
+2026-04-02 07:48:13,842 [INFO]   Total instances generated so far: 328000
+
+2026-04-02 07:48:13,843 [DEBUG] $ C:\Users\buitu\AppData\Local\Programs\Python\Python312\python.exe E:\TTTH\attentionV2\min-timespan-delivery-v2\problems\generate_instance.py --start-number 328000 --batch-size 4000

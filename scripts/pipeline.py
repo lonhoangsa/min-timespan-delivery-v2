@@ -7,12 +7,16 @@ Requirements:
   - Python 3.8+
 
 Examples:
-  python scripts/pipeline.py -y                    # Sinh 4000 instance + push + workflow (tu-increment)
-  python scripts/pipeline.py --status              # Xem lich su generation
-  python scripts/pipeline.py --reset               # Reset generation state ve 0
-  python scripts/pipeline.py --only-generate -y    # Chi sinh 4000 + push (khong workflow)
+  python scripts/pipeline.py -y                         # run-batch: 10 jobs/instance (tu-increment)
+  python scripts/pipeline.py --workflow run-batch-v2 -y  # run-batch-v2: 1 job/instance
+  python scripts/pipeline.py --loop -y                  # Loop run-batch: 10 jobs/instance (chạy liên tục)
+  python scripts/pipeline.py --loop --workflow run-batch-v2 -y  # Loop run-batch-v2: 1 job/instance (chạy liên tục)
+  python scripts/pipeline.py --loop --loop-interval 3600 -y  # Loop với delay 1h giữa các gen
+  python scripts/pipeline.py --status                   # Xem lich su generation
+  python scripts/pipeline.py --reset                    # Reset generation state ve 0
+  python scripts/pipeline.py --only-generate -y         # Chi sinh 4000 + push (khong workflow)
   python scripts/pipeline.py --only-download --run-id 12345678  # Chi tai summary
-  python scripts/pipeline.py --workflow run -y     # Dung 'run' workflow (mac dinh: run-batch)
+  python scripts/pipeline.py --workflow run -y          # Dung 'run' workflow (single run, khong batch)
 """
 
 from __future__ import annotations
@@ -24,6 +28,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -39,7 +44,7 @@ logger = logging.getLogger("pipeline")
 
 class Namespace(argparse.Namespace):
     if TYPE_CHECKING:
-        name: str
+        name: str | None
         workflow: str
         batches: list[int]
         files_per_batch: int
@@ -52,6 +57,8 @@ class Namespace(argparse.Namespace):
         yes: bool
         status: bool
         reset: bool
+        loop: bool
+        loop_interval: int
 
 
 def setup_logging(name: str) -> Path:
@@ -209,6 +216,16 @@ def step1_generate_instances():
     logger.info(f"  Start number: {start_number}")
     logger.info(f"  Total instances generated so far: {state['total_instances_generated']}\n")
 
+    # Clear old data files before generating new ones
+    data_dir = ROOT / "problems" / "data"
+    if data_dir.exists():
+        old_files = list(data_dir.glob("*.txt"))
+        if old_files:
+            logger.info(f"  Clearing {len(old_files)} old files from {data_dir}")
+            for f in old_files:
+                f.unlink()
+            logger.info(f"  -> Cleared!\n")
+
     script = ROOT / "problems" / "generate_instance.py"
     run_cmd([
         sys.executable, str(script),
@@ -216,7 +233,6 @@ def step1_generate_instances():
         "--batch-size", "4000"
     ], capture=False)
 
-    data_dir = ROOT / "problems" / "data"
     count = len(list(data_dir.glob("*.txt")))
     logger.info(f"  -> Da sinh {count} file trong {data_dir}\n")
     
@@ -373,7 +389,7 @@ def step3_trigger_workflow(
     logger.info(f"STEP 3: Trigger workflow '{workflow}'")
     logger.info("=" * 60)
 
-    workflow_file = f"{workflow}.yml" if workflow == "run" else "run-batch.yml"
+    workflow_file = f"{workflow}.yml" if workflow == "run" else f"{workflow}.yml"
     run_ids: list[int] = []
 
     if workflow == "run":
@@ -385,7 +401,7 @@ def step3_trigger_workflow(
         run_ids.append(run_id)
         logger.info(f"  -> Run ID: {run_id}")
 
-    elif workflow == "run-batch":
+    elif workflow in ["run-batch", "run-batch-v2"]:
         # Auto-calculate batches if not provided
         if not batches:
             batch_count = calculate_batch_count(files_per_batch)
@@ -505,11 +521,12 @@ def step6_download_summary(name: str, run_ids: list[int], workflow: str):
 
     for run_id in run_ids:
         artifact_names = _list_artifacts(run_id)
-        # Chi tai summary-csv (run.yml) hoac summary-batch-N (run-batch.yml)
+        # Chi tai summary-csv (run.yml) hoac summary-batch-N (run-batch.yml) hoac summary-batch-v2-N (run-batch-v2.yml)
         summary_arts = [
             a for a in artifact_names
             if a == "summary-csv"
             or (a.startswith("summary-batch-") and a[len("summary-batch-"):].isdigit())
+            or (a.startswith("summary-batch-v2-") and a[len("summary-batch-v2-"):].isdigit())
         ]
 
         if not summary_arts:
@@ -555,6 +572,46 @@ def confirm(message: str) -> bool:
         return False
 
 
+def confirm_with_timeout(message: str, timeout_seconds: int = 120) -> bool:
+    """
+    Ask user for Y/N confirmation with timeout.
+    If no response within timeout, auto-returns True (continue).
+    
+    Args:
+        message: Prompt message
+        timeout_seconds: Timeout in seconds (default 120 = 2 minutes)
+    
+    Returns:
+        True if user says 'y' or timeout expires (auto-continue)
+        False if user says 'n'
+    """
+    result: dict[str, str | None] = {"answer": None}
+    
+    def get_input():
+        try:
+            result["answer"] = input(f"{message} (y/n) [auto-continue in {timeout_seconds}s]: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            result["answer"] = "n"
+    
+    # Run input in a thread so we can timeout
+    input_thread = threading.Thread(target=get_input, daemon=True)
+    input_thread.start()
+    input_thread.join(timeout=timeout_seconds)
+    
+    # If thread still alive, timeout occurred
+    if input_thread.is_alive():
+        print(f"[INFO] Timeout: tự động chạy tiếp iteration tiếp theo\n")
+        return True
+    
+    # Check user response
+    if result["answer"] is None:
+        return True
+    elif result["answer"] in ("y", "yes"):
+        return True
+    else:
+        return False
+
+
 def show_generation_status():
     """Display current generation status"""
     state = load_generation_state()
@@ -574,6 +631,91 @@ def show_generation_status():
     print("=" * 60 + "\n")
 
 
+def run_pipeline_once(args: Namespace) -> bool:
+    """
+    Run pipeline once for one generation.
+    Returns True if successful, False if failed.
+    """
+    try:
+        # For other modes without --name, auto-generate from generation count
+        if not args.name:
+            state = load_generation_state()
+            gen_num = state["generation_count"] + 1
+            args.name = f"Lan{gen_num}"
+            print(f"[INFO] Auto-generated name: {args.name} (generation #{gen_num})\n")
+
+        log_file = setup_logging(args.name)
+        logger.info(f"Log file: {log_file}\n")
+
+        data_dir = TRAIN_DATA_ROOT / args.name
+        baseline_dir = BASELINE_ROOT / args.name
+
+        if args.only_download:
+            if not args.run_id:
+                logger.error("Can chi dinh --run-id khi dung --only-download!")
+                return False
+
+            logger.info(f"CHE DO: Chi tai summary")
+            logger.info(f"  Data dir     : {data_dir}")
+            logger.info(f"  Baseline dir : {baseline_dir}")
+            logger.info(f"  Run IDs      : {args.run_id}\n")
+
+            check_prerequisites()
+            step5_move_data(args.name)
+            step6_download_summary(args.name, args.run_id, args.workflow)
+
+        elif args.only_generate:
+            logger.info("CHE DO: Chi sinh instance + push\n")
+            step1_generate_instances()
+            step2_git_push()
+
+        else:
+            logger.info("CHE DO: Full pipeline")
+            logger.info(f"  Workflow      : {args.workflow}")
+            logger.info(f"  Data dir     : {data_dir}")
+            logger.info(f"  Baseline dir : {baseline_dir}")
+            
+            # Auto-calculate batches if run-batch and not provided
+            if args.workflow == "run-batch" and not args.batches:
+                batch_count = calculate_batch_count(args.files_per_batch)
+                if batch_count > 0:
+                    args.batches = list(range(1, batch_count + 1))
+                    logger.info(f"  Batches      : {args.batches} (auto-calculated)")
+            elif args.batches:
+                logger.info(f"  Batches      : {args.batches}")
+            
+            logger.info(f"  Files/batch  : {args.files_per_batch}\n")
+
+            if not args.yes:
+                if not confirm("Bat dau pipeline?"):
+                    logger.info("Da huy.")
+                    return False
+                print()
+
+            check_prerequisites()
+
+            if not args.skip_generate:
+                step1_generate_instances()
+
+            if not args.skip_push:
+                step2_git_push()
+
+            run_ids = step3_trigger_workflow(args.workflow, args.batches, args.files_per_batch)
+            step4_wait_for_workflows(run_ids, args.timeout)
+            step5_move_data(args.name)
+            step6_download_summary(args.name, run_ids, args.workflow)
+
+        logger.info("=" * 60)
+        logger.info("PIPELINE HOAN TAT!")
+        logger.info("=" * 60)
+        
+        return True
+
+    except Exception as e:
+        logger.error(f"\nLoi: {e}", exc_info=True)
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Pipeline tu dong: sinh instance -> push -> workflow -> chuyen data -> tai summary",
@@ -581,8 +723,8 @@ def main():
         epilog=__doc__,
     )
     parser.add_argument("--name", required=False, help="Ten folder (VD: Lan5). Neu khong co, tu-sinh Lan[generation_num]")
-    parser.add_argument("--workflow", choices=["run", "run-batch"], default="run-batch",
-                        help="Workflow can trigger (default: run-batch)")
+    parser.add_argument("--workflow", choices=["run", "run-batch", "run-batch-v2"], default="run-batch",
+                        help="Workflow can trigger (default: run-batch, use run-batch-v2 for 1 job/instance)")
     parser.add_argument("--batches", type=int, nargs="+",
                         help="Batch numbers cho run-batch (VD: 1 2 3). Neu khong co, se tu-tinh tu file count")
     parser.add_argument("--files-per-batch", type=int, default=1000,
@@ -605,6 +747,10 @@ def main():
                         help="Chi hien thi generation status")
     parser.add_argument("--reset", action="store_true",
                         help="Reset generation state ve initial (0 generation, 0 instances)")
+    parser.add_argument("--loop", action="store_true",
+                        help="Loop mode: run pipeline liên tục (Ctrl+C để stop)")
+    parser.add_argument("--loop-interval", type=int, default=0,
+                        help="Delay (giay) giữa các iteration (default: 0 = chạy ngay lập tức)")
 
     args = parser.parse_args(namespace=Namespace())
 
@@ -621,78 +767,64 @@ def main():
     # For --only-download, --name is required
     if args.only_download and not args.name:
         parser.error("--name is required when using --only-download")
+
+    # Loop mode
+    if args.loop:
+        loop_count = 0
+        print("\n" + "=" * 60)
+        print("LOOP MODE - Chạy liên tục (Ctrl+C để stop)")
+        print("=" * 60 + "\n")
+        
+        try:
+            while True:
+                loop_count += 1
+                print(f"\n{'='*60}")
+                print(f"LOOP ITERATION #{loop_count}")
+                print(f"{'='*60}\n")
+                
+                # Reset name to auto-generate for each iteration
+                args.name = None
+                
+                # Run one pipeline iteration
+                success = run_pipeline_once(args)
+                
+                if success:
+                    # Ask user to continue or not (with 2 minute timeout)
+                    print(f"\n{'='*60}")
+                    print(f"Iteration #{loop_count} hoàn thành!")
+                    print(f"{'='*60}")
+                    
+                    should_continue = confirm_with_timeout("\nChạy iteration tiếp theo?", timeout_seconds=120)
+                    
+                    if not should_continue:
+                        print(f"\n[INFO] Loop stopped sau {loop_count} iterations (user declined)")
+                        return
+                    
+                    # Apply delay if specified
+                    if args.loop_interval > 0:
+                        print(f"\n[INFO] Chờ {args.loop_interval}s trước iteration tiếp theo...")
+                        time.sleep(args.loop_interval)
+                else:
+                    print(f"\n[WARNING] Iteration #{loop_count} thất bại, tiếp tục loop...")
+                    should_continue = confirm_with_timeout("\nChạy iteration tiếp theo?", timeout_seconds=120)
+                    
+                    if not should_continue:
+                        print(f"\n[INFO] Loop stopped sau {loop_count} iterations (user declined after failure)")
+                        return
+                    
+                    if args.loop_interval > 0:
+                        print(f"\n[INFO] Chờ {args.loop_interval}s trước iteration tiếp theo...")
+                        time.sleep(args.loop_interval)
+        except KeyboardInterrupt:
+            print(f"\n[INFO] Loop stopped sau {loop_count} iterations (Ctrl+C)")
+            return
+        except Exception as e:
+            print(f"\n[ERROR] Loop error: {e}")
+            return
     
-    # For other modes without --name, auto-generate from generation count
-    if not args.name:
-        state = load_generation_state()
-        gen_num = state["generation_count"] + 1
-        args.name = f"Lan{gen_num}"
-        print(f"[INFO] Auto-generated name: {args.name} (generation #{gen_num})\n")
-
-    log_file = setup_logging(args.name)
-    logger.info(f"Log file: {log_file}\n")
-
-    data_dir = TRAIN_DATA_ROOT / args.name
-    baseline_dir = BASELINE_ROOT / args.name
-
-    if args.only_download:
-        if not args.run_id:
-            logger.error("Can chi dinh --run-id khi dung --only-download!")
-            sys.exit(1)
-
-        logger.info(f"CHE DO: Chi tai summary")
-        logger.info(f"  Data dir     : {data_dir}")
-        logger.info(f"  Baseline dir : {baseline_dir}")
-        logger.info(f"  Run IDs      : {args.run_id}\n")
-
-        check_prerequisites()
-        step5_move_data(args.name)
-        step6_download_summary(args.name, args.run_id, args.workflow)
-
-    elif args.only_generate:
-        logger.info("CHE DO: Chi sinh instance + push\n")
-        step1_generate_instances()
-        step2_git_push()
-
+    # Single run mode
     else:
-        logger.info("CHE DO: Full pipeline")
-        logger.info(f"  Workflow      : {args.workflow}")
-        logger.info(f"  Data dir     : {data_dir}")
-        logger.info(f"  Baseline dir : {baseline_dir}")
-        
-        # Auto-calculate batches if run-batch and not provided
-        if args.workflow == "run-batch" and not args.batches:
-            batch_count = calculate_batch_count(args.files_per_batch)
-            if batch_count > 0:
-                args.batches = list(range(1, batch_count + 1))
-                logger.info(f"  Batches      : {args.batches} (auto-calculated)")
-        elif args.batches:
-            logger.info(f"  Batches      : {args.batches}")
-        
-        logger.info(f"  Files/batch  : {args.files_per_batch}\n")
-
-        if not args.yes:
-            if not confirm("Bat dau pipeline?"):
-                logger.info("Da huy.")
-                sys.exit(0)
-            print()
-
-        check_prerequisites()
-
-        if not args.skip_generate:
-            step1_generate_instances()
-
-        if not args.skip_push:
-            step2_git_push()
-
-        run_ids = step3_trigger_workflow(args.workflow, args.batches, args.files_per_batch)
-        step4_wait_for_workflows(run_ids, args.timeout)
-        step5_move_data(args.name)
-        step6_download_summary(args.name, run_ids, args.workflow)
-
-    logger.info("=" * 60)
-    logger.info("PIPELINE HOAN TAT!")
-    logger.info("=" * 60)
+        run_pipeline_once(args)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,199 @@
+name: Run algorithm (Batched v2 - Single Job)
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_number:
+        description: 'Batch number to process (1-10 for 10k files with 1k per batch)'
+        required: true
+        type: number
+        default: 1
+      files_per_batch:
+        description: 'Number of files per batch'
+        required: false
+        type: number
+        default: 1000
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-batch-${{ inputs.batch_number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compile source files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: View system info
+        run: lscpu
+
+      - name: Setup Rust
+        run: curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=1.89 -y
+
+      - name: Compile source files
+        run: cargo build --release
+
+      - name: Display help menu
+        run: target/release/min-timespan-delivery run --help
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: executable-batch-${{ inputs.batch_number }}
+          path: target/release/min-timespan-delivery
+
+  solve:
+    name: Run algorithm (batch ${{ inputs.batch_number }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        steps: [0]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Download executable
+        uses: actions/download-artifact@v4
+        with:
+          name: executable-batch-${{ inputs.batch_number }}
+          path: .
+
+      - name: Update permission
+        run: chmod +x min-timespan-delivery
+
+      - name: Run algorithm on batch ${{ inputs.batch_number }}
+        run: |
+          exitcode=0
+          set +e
+          let steps_per_run=1
+          let begin=$steps_per_run*${{ matrix.steps }}+1
+          let end=$begin+$steps_per_run-1
+
+          execute() {
+            command=$1
+            echo "Running \"$command\""
+            $command
+
+            status=$?
+            if [ $status -ne 0 ]
+            then
+              echo "::error::\"$command\" exit with status $status"
+              exitcode=1
+            fi
+          }
+
+          # Get batch parameters
+          BATCH_NUMBER=${{ inputs.batch_number }}
+          FILES_PER_BATCH=${{ inputs.files_per_batch }}
+          
+          echo "==========================="
+          echo "BATCH $BATCH_NUMBER PROCESSING (v2 - Single Job)"
+          echo "Files per batch: $FILES_PER_BATCH"
+          echo "==========================="
+          
+          # Collect all files and sort them
+          all_files=($(find problems/data/* -type f -name "*.txt" | sort))
+          total_files=${#all_files[@]}
+          
+          echo "Total files in dataset: $total_files"
+          
+          # Calculate which files THIS BATCH should process
+          start_file=$(( (BATCH_NUMBER - 1) * FILES_PER_BATCH ))
+          end_file=$(( start_file + FILES_PER_BATCH ))
+          
+          if [ $end_file -gt $total_files ]; then
+            end_file=$total_files
+          fi
+          
+          echo "This batch processes files: $((start_file + 1)) to $end_file"
+          echo "==========================="
+
+          # Process files in this batch
+          processed=0
+          for i in $(seq $begin $end)
+          do
+            echo "RUN #$i"
+            for file_idx in $(seq $start_file $(( end_file - 1 )))
+            do
+              path=${all_files[$file_idx]}
+              
+              if [ -f "$path" ]; then
+                customers=$(grep -oP "(?<=customers )\d+" "$path" 2>/dev/null || echo "999")
+                if [ $customers -le 200 ]; then
+                  echo "[Batch $BATCH_NUMBER] Processing file $((file_idx + 1)): $(basename $path)"
+                  execute "./min-timespan-delivery run $path --disable-logging --extra ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}-batch-$BATCH_NUMBER"
+                  ((processed++))
+                else
+                  echo "[Batch $BATCH_NUMBER] Skipping $(basename $path): too many customers ($customers)"
+                fi
+              fi
+            done
+          done
+
+          echo "==========================="
+          echo "Batch $BATCH_NUMBER completed: Processed $processed files"
+          echo "==========================="
+          exit $exitcode
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: output-batch-${{ inputs.batch_number }}-job-${{ matrix.steps }}
+          path: outputs/*
+
+  summary:
+    name: Summarize batch ${{ inputs.batch_number }} results
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: solve
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Download results
+        uses: actions/download-artifact@v4
+        with:
+          path: outputs/
+          pattern: output-batch-${{ inputs.batch_number }}-job-*
+          merge-multiple: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Summarize results
+        run: |
+          python scripts/summary.py
+          
+          # Create batch-specific summary
+          mv outputs/summary.csv outputs/summary-batch-v2-${{ inputs.batch_number }}.csv
+          mv outputs/summary.db outputs/summary-batch-v2-${{ inputs.batch_number }}.db
+          
+          echo "Batch ${{ inputs.batch_number }} summary (v2) created"
+        env:
+          PYTHONRECURSIONLIMIT: 10000
+
+      - name: Upload summary files
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: summary-batch-v2-${{ inputs.batch_number }}
+          path: |
+            outputs/summary-batch-v2-${{ inputs.batch_number }}.csv
+            outputs/summary-batch-v2-${{ inputs.batch_number }}.db
